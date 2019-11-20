@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <item
+            android:id="@+id/action_mapa"
+            android:title="Mapa" />
+    <item
+            android:id="@+id/action_add_novos_pontos"
+            android:title="Adicionar novos pontos" />
+    <item
+            android:id="@+id/action_lista_pontos"
+            android:title="Lista de pontos" />
+    <item
+            android:id="@+id/action_fale_conosco"
+            android:title="Fale conosco" />
+    <item
+            android:id="@+id/action_logout"
+            android:title="Sair" />
+</menu>

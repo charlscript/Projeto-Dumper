@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Dumper</string>
+    <string name="title_activity_teste">Adicionar novos pontos</string>
+    <string name="title_activity_mapa">Dumper</string>
+    <string name="title_activity_fale_conosco">Fale Conosco</string>
+
+    <!--TELA LOGIN-->
+    <string name="login_login">Login</string>
+    <string name="login_usuario">E-mail</string>
+    <string name="login_senha">Senha</string>
+    <string name="reset_password">Insira seu E-mail</string>
+    <string name="login_logar">Logar</string>
+    <string name="login_cadastrar">Cadastre-se</string>
+
+    <!--TELAS TITÚLOS-->
+    <string name="title_activity_cadastro_usuario">Cadastro</string>
+    <string name="title_activity_cadastro_de_ponto">Adicionar novos pontos</string>
+    <string name="title_activity_chat_bot">Chat Bot</string>
+    <string name="title_activity_lista_ponto2">Lista de Pontos</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+
+</resources>

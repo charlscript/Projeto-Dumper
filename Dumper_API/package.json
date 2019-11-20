@@ -1,0 +1,25 @@
+{
+  "name": "Dumper_API",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "repository": "https://github.com/GilbertoCharles/Dumper_API.git",
+  "author": "gilbertocharles <gilbertocharles1@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "bcryptjs": "^2.4.3",
+    "dialogflow": "^0.10.3",
+    "dotenv": "^8.1.0",
+    "express": "^4.17.1",
+    "mongoose": "^5.6.11",
+    "multer": "^1.4.2",
+    "pb-util": "^0.1.2"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.1"
+  }
+}
