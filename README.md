@@ -13,7 +13,7 @@
 - **What is Dumper?**
   *Dumper is a native android app written in Kotlin to help people properly dispose of garbage.*
 
-- **What is the stack user in the project?**
+- **What was the stack used in the project?**
   
   *Dumper is composed of a Android app and a NodeJS REST api. The API is hosted at Heroku and connects to Atlas Storage, where MongoDB is hosted and consumes DialogFlow API where our chatbot is served. The APP uses Firebase for authentication*
 
