@@ -23,7 +23,7 @@
 
 
 # Projeto Dumper
-
+![logo](img/logo.png)
 
 **Este é o repositório público do Projeto Dumper. Informações sensíveis como chaves de API para o Firebase, MongoDB Atlas e Dialogflow foram propositalmente ocultadas por razões de segurança.**
 
