@@ -4,7 +4,7 @@
 
 **This is the public repository of Dumper Project. Sensible information like API keys to firebase, MongoDB and DialogFlow was purposely hidden for security reasons.**
 
-*This repository is a mirror from the private ones used in development and may be not fully updated before November 25 of 2019*
+
 
 
 
