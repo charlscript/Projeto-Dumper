@@ -119,26 +119,39 @@ class CadastroDePontoActivity : AppCompatActivity(), OnMapReadyCallback, MapFrag
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.action_mapa -> {
-            msgShow("Mapa")
+            msgShow("Map")
             val intent = Intent(this, MapaActivity::class.java)
             startActivity(intent)
             true
         }
         R.id.action_add_novos_pontos -> {
-            msgShow("Adicionar novos ponto")
+            msgShow("Adicionar novos pontos")
             val intent = Intent(this, CadastroDePontoActivity::class.java)
+            intent.putExtra("User", auth.currentUser?.email)
             startActivity(intent)
             true
         }
-        R.id.action_lista_pontos -> {
-            msgShow("Lista de pontos")
-            val intent = Intent(this, ListaPontoActivity2::class.java)
+        R.id.action_admin_grupos -> {
+            msgShow("Grupos que eu gerencio")
+            val intent = Intent(this, GruposGerenciados::class.java)
             startActivity(intent)
             true
         }
-        R.id.action_fale_conosco -> {
-            msgShow("Fale conosco")
-            val intent = Intent(this, FaleConoscoActivity::class.java)
+        R.id.action_grupos -> {
+            msgShow("Grupos")
+            val intent = Intent(this, TodosGrupos::class.java)
+            startActivity(intent)
+            true
+        }
+        R.id.action_meus_grupos -> {
+            msgShow("Grupos que eu participo")
+            val intent = Intent(this, MeusGrupos::class.java)
+            startActivity(intent)
+            true
+        }
+        R.id.action_cadastro_grupo -> {
+            msgShow("Cadastrar um grupo")
+            val intent = Intent(this, CadastrarGrupo::class.java)
             startActivity(intent)
             true
         }

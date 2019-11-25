@@ -1,6 +1,7 @@
 package com.example.dumper2
 
 import android.inputmethodservice.AbstractInputMethodService
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import retrofit2.http.FormUrlEncoded
 import java.net.PasswordAuthentication
@@ -108,4 +109,62 @@ data class DialogFlowResponse (
     var response: String,
     @SerializedName("intent")
     var intent: String
+)
+
+data class Messages(
+    var message_sent: String,
+    var message_received: String
+)
+
+data class Grupo(
+    var nome: String,
+    var EmailAdmin: String?,
+    var descricao: String
+)
+
+data class GrupoResponse(
+    var _id: String
+)
+
+data class Message(
+    var _id: String,
+    var mensagem: String,
+    var nome: String,
+    var email: String
+)
+
+data class MessageSent(
+    var mensagem: String,
+    var nome: String?,
+    var email: String?
+)
+
+data class Admin(
+    var email: String?
+)
+
+data class GrupoAdminResponse(
+    var _id: String,
+    var nome: String,
+    var EmailAdmin: String,
+    var messages: ArrayList<Message> = ArrayList(),
+    var descricao: String,
+    var createdAt: String,
+    var updatedAt: String,
+    var __v: Int
+
+)
+
+data class Membro(
+    var email: String?,
+    var grupos: String?
+)
+
+data class MembroResponse(
+    var _id: String
+)
+
+data class MessageBody(
+    var id: String?,
+    var message: MessageSent
 )

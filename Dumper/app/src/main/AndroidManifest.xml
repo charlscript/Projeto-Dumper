@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.dumper2">
-
     <!-- To access Google+ APIs: -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -16,6 +15,26 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity
+            android:name=".ChatGroup"
+            android:label="Chat em grupo"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".MeusGrupos"
+            android:label="Grupos que participo"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".TodosGrupos"
+            android:label="Todos os grupos"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".GruposGerenciados"
+            android:label="Grupos que eu Gerencio"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".CadastrarGrupo"
+            android:label="Cadastrar Grupo"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ListaPontoActivity2"
             android:label="@string/title_activity_lista_ponto2"
@@ -62,7 +81,7 @@
             android:label="@string/title_activity_mapa" />
         <activity
             android:name=".LoginActivity"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

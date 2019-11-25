@@ -4,53 +4,85 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.ArrayAdapter
-import android.widget.ListView
+import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat.startActivity
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.android.synthetic.main.activity_cadastro_de_ponto.fab
-import kotlinx.android.synthetic.main.activity_lista_ponto2.toolbar
+import kotlinx.android.synthetic.main.activity_cadastrar_grupo.*
+
+
 import retrofit2.Call
-import retrofit2.Response
 import retrofit2.Callback
+import retrofit2.Response
 
-class ListaPontoActivity2 : AppCompatActivity() {
 
+class CadastrarGrupo : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
-    lateinit var listView: ListView
-    var pontos = mutableListOf<String>()
-    var adapter: ArrayAdapter<String>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         auth = FirebaseAuth.getInstance()
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_lista_ponto2)
+        setContentView(R.layout.activity_cadastrar_grupo)
         setSupportActionBar(toolbar)
-        listView = findViewById(R.id.listaView)
+        val retrofitClient = DumperAPI.getRetrofitInstance("https://dumper-app.herokuapp.com")
+        val endpoint = retrofitClient.create(Endpoint::class.java)
+        val callback = endpoint
 
         //actionbar
         val actionbar = supportActionBar
         //set actionbar title
-        actionbar!!.title = "Lista de Ponto"
+        actionbar!!.title = "Cadastro de grupos"
         //set back button
         actionbar.setDisplayHomeAsUpEnabled(true)
         actionbar.setDisplayHomeAsUpEnabled(true)
 
-        adapter = ArrayAdapter(this,android.R.layout.simple_expandable_list_item_1, pontos)
-        listView.adapter = adapter
-        getPontos()
+
+
+
+        var btnEnviar = findViewById<Button>(R.id.btn_cadastrar_grupo)
+
+        btnEnviar.setOnClickListener{
+            val nomeGrupo = et_nomeGrupo.text.toString().trim()
+            val descricaoGrupo = et_descricaoGrupo.text.toString().trim()
+            var EmailAdmin = auth.currentUser!!.email
+            var grupo = Grupo(nomeGrupo,EmailAdmin,descricaoGrupo)
+            callback.createGrupo(grupo).enqueue(object: Callback<GrupoResponse> {
+
+                override fun onResponse(call: Call<GrupoResponse>, response: Response<GrupoResponse>) {
+                    if (response.body()!!._id != "") {
+                        Toast.makeText(this@CadastrarGrupo, "Grupo criado com sucesso", Toast.LENGTH_LONG).show()
+                        val intent = Intent(this@CadastrarGrupo, MapaActivity::class.java)
+                        startActivity(intent)
+                    } else {
+                        val builder = AlertDialog.Builder(this@CadastrarGrupo)
+                        builder.setTitle("Erro")
+                        builder.setMessage("Erro ao criar grupo")
+                    }
+                }
+                override fun onFailure(call: Call<GrupoResponse>, t: Throwable) {
+
+                }
+            })
+        }
 
         fab.setOnClickListener { _ ->
             val intent = Intent(this, ChatBotActivity::class.java)
             startActivity(intent)
         }
+
+
     }
 
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
     }
+
 
     /*===============MENU===============*/
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -111,25 +143,5 @@ class ListaPontoActivity2 : AppCompatActivity() {
 
     fun msgShow(msg: String) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
-    }
-
-    // Request get na api
-    fun getPontos() {
-
-        val retrofitClient = DumperAPI.getRetrofitInstance("https://dumper-app.herokuapp.com")
-        val endpoint = retrofitClient.create(Endpoint::class.java)
-        val callback = endpoint.getPosts()
-
-        callback.enqueue(object : Callback<List<PontoUsuario>> {
-            override fun onFailure(call: Call<List<PontoUsuario>>, t: Throwable) {
-                Toast.makeText(baseContext, t.message, Toast.LENGTH_SHORT).show()
-            }
-            override fun onResponse(call: Call<List<PontoUsuario>>, response: Response<List<PontoUsuario>>) {
-                response.body()?.forEach {
-                    pontos.add(it.nome)
-                    adapter?.notifyDataSetChanged()
-                }
-            }
-        })
     }
 }

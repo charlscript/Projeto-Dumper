@@ -120,15 +120,15 @@ class FaleConoscoActivity : AppCompatActivity() {
             startActivity(intent)
             true
         }
-        R.id.action_lista_pontos -> {
-            msgShow("Lista de pontos")
+        R.id.action_admin_grupos -> {
+            msgShow("Grupos que eu gerencio")
             val intent = Intent(this, ListaPontoActivity2::class.java)
             startActivity(intent)
             true
         }
-        R.id.action_fale_conosco -> {
-            msgShow("Fale conosco")
-            val intent = Intent(this, FaleConoscoActivity::class.java)
+        R.id.action_cadastro_grupo -> {
+            msgShow("Cadastrar um grupo")
+            val intent = Intent(this, CadastrarGrupo::class.java)
             startActivity(intent)
             true
         }

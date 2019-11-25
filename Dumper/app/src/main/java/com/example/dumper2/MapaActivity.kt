@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -96,8 +97,8 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                             response.body()?.forEach {
                                 val ponto = LatLng(it.latitude.toDouble(), it.longitude.toDouble())
                                 mMap.addMarker(MarkerOptions().position(ponto).title(it.nome).snippet(it.descricao))
-                                if (Distance(currentLatLng, ponto) <= 2000) {
-                                    //VALIDAR PONTOS
+                                if (Distance(currentLatLng, ponto) <= 25) {
+                                    callAlertValidation(it.nome, Distance(currentLatLng, ponto), it._id)
                                 }
                             }
                         }
@@ -138,15 +139,27 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             startActivity(intent)
             true
         }
-        R.id.action_lista_pontos -> {
-            msgShow("Lista de pontos")
-            val intent = Intent(this, ListaPontoActivity2::class.java)
+        R.id.action_admin_grupos -> {
+            msgShow("Grupos que eu gerencio")
+            val intent = Intent(this, GruposGerenciados::class.java)
             startActivity(intent)
             true
         }
-        R.id.action_fale_conosco -> {
-            msgShow("Fale conosco")
-            val intent = Intent(this, FaleConoscoActivity::class.java)
+        R.id.action_grupos -> {
+            msgShow("Grupos")
+            val intent = Intent(this, TodosGrupos::class.java)
+            startActivity(intent)
+            true
+        }
+        R.id.action_meus_grupos -> {
+            msgShow("Grupos que eu participo")
+            val intent = Intent(this, MeusGrupos::class.java)
+            startActivity(intent)
+            true
+        }
+        R.id.action_cadastro_grupo -> {
+            msgShow("Cadastrar um grupo")
+            val intent = Intent(this, CadastrarGrupo::class.java)
             startActivity(intent)
             true
         }
@@ -162,7 +175,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         }
     }
 
-    private fun Distance(origin: LatLng, point: LatLng): Float {
+    private fun Distance(origin: LatLng, point: LatLng): Double {
         var localOrigin  =  Location(LocationManager.GPS_PROVIDER)
         localOrigin.latitude = origin.latitude
         localOrigin.longitude = origin.longitude
@@ -171,13 +184,43 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         localDestination.latitude = point.latitude
         localDestination.longitude = point.longitude
 
-        return localOrigin.distanceTo(localDestination)
+        return localOrigin.distanceTo(localDestination).toDouble()
     }
 
     override fun onMarkerClick(p0: Marker?): Boolean = false
 
     private fun msgShow(msg: String) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+    }
+
+    private fun callAlertValidation(nome: String, distancia: Double, id: String) {
+
+        var alertDialog = AlertDialog.Builder(this)
+        alertDialog.setTitle(nome.toUpperCase() + " está há "+ distancia.toString() + " metros de você")
+        alertDialog.setMessage("Você confirma a existência do ponto de descarte?")
+
+        alertDialog.setPositiveButton("Sim") { _, _ ->
+            val retrofitClient = DumperAPI.getRetrofitInstance("https://dumper-app.herokuapp.com")
+            val endpoint = retrofitClient.create(Endpoint::class.java)
+
+            endpoint.validatePoint(id).enqueue(object : Callback<RegisterPointResponse>{
+                override fun onResponse(
+                    call: Call<RegisterPointResponse>,
+                    response: Response<RegisterPointResponse>
+                ) {
+                    Toast.makeText(this@MapaActivity, "Ponto validado com sucesso!", Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onFailure(call: Call<RegisterPointResponse>, t: Throwable) {
+                    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                }
+            })
+        }
+
+        alertDialog.setNegativeButton("Não") { _, _ ->
+            //Toast.makeText(this, "Não", Toast.LENGTH_LONG).show()
+        }
+        alertDialog.show()
     }
 
     companion object{

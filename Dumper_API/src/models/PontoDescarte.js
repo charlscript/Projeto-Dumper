@@ -1,31 +1,28 @@
 const { Schema, model } = require("mongoose");
 
-const PontoDescarteSchema = new Schema(
-  {
+const PontoDescarteSchema = new Schema({
     nome: {
-      type: String,
-      required: true
+        type: String,
+        required: true
     },
     latitude: {
-      type: String,
-      required: true
+        type: String,
+        required: true
     },
     longitude: {
-      type: String,
-      required: true
+        type: String,
+        required: true
     },
     descricao: {
-      type: String,
-      required: true
+        type: String,
+        required: true
     },
     userEmail: {
-      type: String,
+        type: String,
     },
     validado: Boolean
-  },
-  {
+}, {
     timestamps: true
-  }
-);
+});
 
 module.exports = model("PontoDescarte", PontoDescarteSchema);

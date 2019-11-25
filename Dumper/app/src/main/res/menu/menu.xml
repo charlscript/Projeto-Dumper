@@ -10,11 +10,17 @@
             android:id="@+id/action_add_novos_pontos"
             android:title="Adicionar novos pontos" />
     <item
-            android:id="@+id/action_lista_pontos"
-            android:title="Lista de pontos" />
+            android:id="@+id/action_admin_grupos"
+            android:title="Grupos que eu gerencio" />
     <item
-            android:id="@+id/action_fale_conosco"
-            android:title="Fale conosco" />
+        android:id="@+id/action_meus_grupos"
+        android:title="Grupos que participo" />
+    <item
+    android:id="@+id/action_grupos"
+    android:title="Grupos" />
+    <item
+            android:id="@+id/action_cadastro_grupo"
+            android:title="Criar um grupo de descarte" />
     <item
             android:id="@+id/action_logout"
             android:title="Sair" />

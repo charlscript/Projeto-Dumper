@@ -7,41 +7,23 @@ const fs = require('fs');
 const _ = require('lodash');
 const UsuarioController = require('./controllers/UsuarioController');
 const PontoDescarteController = require('./controllers/PontoDescarteController');
-const FaleConoscoController = require('./controllers/FaleConoscoController')
+const GrupoController = require('./controllers/GrupoController')
 const dialogflow = require("dialogflow");
 const { struct } = require("pb-util");
 const routes = express.Router();
 require('dotenv').config()
 
-/* Rotas de pontos */
-
 routes.get("/listPoint", PontoDescarteController.index);
-
 routes.get("/deletePoint/:id", PontoDescarteController.delete);
-
 routes.get("/validatePoint/:id", PontoDescarteController.validate);
-
 routes.post("/savePoint", PontoDescarteController.store);
-
-
-/* Rotas de Usuarios */
-
-routes.get("/deleteUser/:id", UsuarioController.delete);
-
-routes.get("/listUser", UsuarioController.index);
-
-routes.post("/saveUser", UsuarioController.store);
-
-routes.post("/login", UsuarioController.login);
-
-/* Rotas de mensagem */
-
-routes.get("/deleteMessage/:id", FaleConoscoController.delete);
-routes.get("/getMessages", FaleConoscoController.getMessage);
-routes.post("/sendMessage", FaleConoscoController.sendMessage);
-
-
-// Dialogflow
+routes.get("/grupos", GrupoController.index);
+routes.post("/sendMessage", GrupoController.sendMessage);
+routes.post("/createGrupo", GrupoController.store);
+routes.get("/deleteGroup/:id", GrupoController.delete);
+routes.post("/joinGrupo", UsuarioController.store);
+routes.post("/adminGroups", GrupoController.meusGrupos);
+routes.post("/findUserGroups", UsuarioController.findUser);
 
 
 const privateKey = _.replace(process.env.DIALOGFLOW_PRIVATE_KEY, new RegExp("\\\\n", "\g"), "\n")
@@ -97,8 +79,6 @@ routes.post('/dialog', async(req, res) => {
         console.log(result.queryText, result.fulfillmentText)
     }
 })
-
 routes.use(bodyParser.json())
 routes.use(bodyParser.urlencoded({ extended: true }))
-
 module.exports = routes;

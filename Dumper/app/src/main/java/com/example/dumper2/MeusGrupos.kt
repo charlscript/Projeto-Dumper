@@ -1,94 +1,71 @@
 package com.example.dumper2
 
+import android.app.PendingIntent.getActivity
 import android.content.Context
 import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Toast
-import com.google.firebase.auth.FirebaseAuth
-import kotlinx.android.synthetic.main.activity_chat_bot.*
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import android.view.*
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.Toast
+import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.messages.view.*
+import com.google.firebase.auth.FirebaseAuth
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import kotlinx.android.synthetic.main.activity_meus_grupos.*
 
-class ChatBotActivity : AppCompatActivity() {
 
+class MeusGrupos : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
-    var messages = mutableListOf<Messages>()
+    var grupos = mutableListOf<GrupoAdminResponse>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        auth = FirebaseAuth.getInstance()
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_chat_bot)
+        setContentView(R.layout.activity_grupos_gerenciados)
         setSupportActionBar(toolbar)
         val actionbar = supportActionBar
-        actionbar!!.title = "Chat"
+        actionbar!!.title = "Todos os grupos"
         actionbar.setDisplayHomeAsUpEnabled(true)
         actionbar.setDisplayHomeAsUpEnabled(true)
+
+        auth = FirebaseAuth.getInstance()
+        val email = auth.currentUser!!.email
 
         val mLinearLayoutManager = LinearLayoutManager(this);
-        mLinearLayoutManager.setStackFromEnd(true)
-        mLinearLayoutManager.isSmoothScrollbarEnabled()
-        chatBot.setLayoutManager(mLinearLayoutManager)
-        chatBot.itemAnimator = DefaultItemAnimator()
-        chatBot.adapter = MyAdapter(messages)
+        groups.setLayoutManager(mLinearLayoutManager)
+        groups.itemAnimator = DefaultItemAnimator()
+        groups.adapter = MyAdapter(this,grupos)
 
-        val retrofitClient = DumperAPI.getRetrofitInstance("https://dumper-app.herokuapp.com")
-        val endpoint = retrofitClient.create(Endpoint::class.java)
-
-
-        btn_send_message.setOnClickListener{
-            val message = et_message.text.toString().trim()
-            val user = auth.currentUser
-            var email = user?.email
-            val dialogBody = DialogFlowPost(message, email, email)
-            val callback = endpoint
-
-            callback.dialog(dialogBody).enqueue(object : Callback<DialogFlowResponse> {
-                override fun onFailure(call: Call<DialogFlowResponse>, t: Throwable) {
-                    Toast.makeText(baseContext, t.message, Toast.LENGTH_SHORT).show()
-                }
-                override fun onResponse(call: Call<DialogFlowResponse>, response: Response<DialogFlowResponse>) {
-
-                    val message = Messages(response.body()!!.query, response.body()!!.response)
-                    messages.add(message)
-                    chatBot.adapter?.notifyDataSetChanged()
-                    chatBot.smoothScrollToPosition(chatBot.adapter!!.getItemCount())
-                    et_message.setText("")
-                    }
-                })
-
+        getGrupos()
+        fab.setOnClickListener { _ ->
+            val intent = Intent(this, ChatBotActivity::class.java)
+            println(this)
+            startActivity(intent)
         }
     }
-    
-    /**
-     * CLASSE VIEW HOLDER (QUASE O EQUIVALENTE AO TABLEVIEW CELL
-     */
+
+
+
     class MyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val message_received: TextView = view.findViewById(R.id.message_received)
-        val message_sent: TextView = view.findViewById(R.id.message_sent)
-        var message: Messages? = null
+        val nome: TextView = view.findViewById(R.id.nome)
+        val descricao: TextView = view.findViewById(R.id.descricao)
+        var group: GrupoAdminResponse? = null
+        var context: Context = view.context
+
 
         init {
-            view.setOnClickListener {
-                Toast.makeText(view.context, "teste" , Toast.LENGTH_LONG).show()
-            }
+            //
         }
-
     }
 
-    /**
-     * CLASSE ADAPATER RESPONSÁVEL PELOS DADOS E "FORMA" DE APRESENTAÇÃO
-     */
-    class MyAdapter(val list: List<Messages>) : RecyclerView.Adapter<MyViewHolder>() {
+    class MyAdapter(val parent:Context, val list: List<GrupoAdminResponse>) : RecyclerView.Adapter<MyViewHolder>() {
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.messages, parent, false)
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.admin_groups, parent, false)
             return MyViewHolder(view)
         }
 
@@ -98,16 +75,58 @@ class ChatBotActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(viewHolder: MyViewHolder, position: Int) {
             val u = list[position]
-            viewHolder.message_sent.setText(u.message_sent)
-            viewHolder.message_received.setText(u.message_received)
-            viewHolder.message = u
+            viewHolder.nome.setText(u.nome)
+            viewHolder.descricao.setText(u.descricao)
+            viewHolder.group = u
+            viewHolder.itemView.setOnClickListener{
+
+                val intent = Intent(viewHolder.context,ChatGroup::class.java)
+                intent.putExtra("ID",u._id)
+                intent.putExtra("Grupo", u.nome)
+                viewHolder.context.startActivity(intent)
+
+            }
+
         }
 
     }
+
+    fun getGrupos() {
+
+        val retrofitClient = DumperAPI.getRetrofitInstance("https://dumper-app.herokuapp.com")
+        val endpoint = retrofitClient.create(Endpoint::class.java)
+        val callback = endpoint
+        val user = Admin(auth.currentUser?.email)
+
+        callback.findUserGroups(user).enqueue(object: Callback<List<GrupoAdminResponse>> {
+            override fun onFailure(call: Call<List<GrupoAdminResponse>>, t: Throwable) {
+                Toast.makeText(baseContext, t.message, Toast.LENGTH_SHORT).show()
+            }
+            override fun onResponse(call: Call<List<GrupoAdminResponse>>, response: Response<List<GrupoAdminResponse>>) {
+                response.body()?.forEach {
+                    val group = GrupoAdminResponse(
+                        it._id,
+                        it.nome,
+                        it.EmailAdmin,
+                        it.messages,
+                        it.descricao,
+                        it.createdAt,
+                        it.updatedAt,
+                        it.__v
+                    )
+                    grupos.add(group)
+                    groups.adapter?.notifyDataSetChanged()
+                }
+            }
+        })
+    }
+
+
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
     }
+
 
     /*===============MENU===============*/
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

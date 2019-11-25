@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.android.synthetic.main.activity_chat_bot.*
+import kotlinx.android.synthetic.main.activity_chat_group.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -15,29 +15,39 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.messages.view.*
+import kotlinx.android.synthetic.main.activity_chat_group.btn_send_message
+import kotlinx.android.synthetic.main.activity_chat_group.et_message
+import kotlinx.android.synthetic.main.activity_chat_group.toolbar
+import kotlinx.android.synthetic.main.messages_group.view.*
+import androidx.core.app.NotificationCompat.getExtras
 
-class ChatBotActivity : AppCompatActivity() {
+
+
+class ChatGroup : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
-    var messages = mutableListOf<Messages>()
+    var messages = mutableListOf<Message>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         auth = FirebaseAuth.getInstance()
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_chat_bot)
+        setContentView(R.layout.activity_chat_group)
         setSupportActionBar(toolbar)
         val actionbar = supportActionBar
-        actionbar!!.title = "Chat"
+        val extras = intent.extras
+        actionbar!!.title = extras!!.getString("Grupo")
         actionbar.setDisplayHomeAsUpEnabled(true)
         actionbar.setDisplayHomeAsUpEnabled(true)
+        val id = extras!!.getString("ID")
+        val user = auth.currentUser
+        val email = user?.email
 
         val mLinearLayoutManager = LinearLayoutManager(this);
         mLinearLayoutManager.setStackFromEnd(true)
         mLinearLayoutManager.isSmoothScrollbarEnabled()
-        chatBot.setLayoutManager(mLinearLayoutManager)
-        chatBot.itemAnimator = DefaultItemAnimator()
-        chatBot.adapter = MyAdapter(messages)
+        chatGroup.setLayoutManager(mLinearLayoutManager)
+        chatGroup.itemAnimator = DefaultItemAnimator()
+        chatGroup.adapter = MyAdapter(messages)
 
         val retrofitClient = DumperAPI.getRetrofitInstance("https://dumper-app.herokuapp.com")
         val endpoint = retrofitClient.create(Endpoint::class.java)
@@ -45,50 +55,57 @@ class ChatBotActivity : AppCompatActivity() {
 
         btn_send_message.setOnClickListener{
             val message = et_message.text.toString().trim()
-            val user = auth.currentUser
-            var email = user?.email
-            val dialogBody = DialogFlowPost(message, email, email)
+
+            var nome = user?.displayName
+            val messageSent = MessageSent(message,nome,email)
+            val messageBody = MessageBody(id, messageSent)
+
             val callback = endpoint
 
-            callback.dialog(dialogBody).enqueue(object : Callback<DialogFlowResponse> {
-                override fun onFailure(call: Call<DialogFlowResponse>, t: Throwable) {
+            callback.sendMessage(messageBody).enqueue(object : Callback<GrupoAdminResponse> {
+                override fun onFailure(call: Call<GrupoAdminResponse>, t: Throwable) {
                     Toast.makeText(baseContext, t.message, Toast.LENGTH_SHORT).show()
                 }
-                override fun onResponse(call: Call<DialogFlowResponse>, response: Response<DialogFlowResponse>) {
-
-                    val message = Messages(response.body()!!.query, response.body()!!.response)
-                    messages.add(message)
-                    chatBot.adapter?.notifyDataSetChanged()
-                    chatBot.smoothScrollToPosition(chatBot.adapter!!.getItemCount())
-                    et_message.setText("")
+                override fun onResponse(call: Call<GrupoAdminResponse>, response: Response<GrupoAdminResponse>) {
+                    messages.clear()
+                    response.body()?.messages?.forEach{
+                        val respMessage = Message(
+                            it._id,
+                            it.mensagem,
+                            it.nome,
+                            it.email
+                        )
+                        messages.add(respMessage)
                     }
-                })
+
+                    chatGroup.adapter?.notifyDataSetChanged()
+                    chatGroup.smoothScrollToPosition(chatGroup.adapter!!.getItemCount())
+                    et_message.setText("")
+                }
+            })
 
         }
     }
-    
-    /**
-     * CLASSE VIEW HOLDER (QUASE O EQUIVALENTE AO TABLEVIEW CELL
-     */
+
+
     class MyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val message_received: TextView = view.findViewById(R.id.message_received)
+        val my_name: TextView = view.findViewById(R.id.my_name)
+        val other_name: TextView = view.findViewById(R.id.other_name)
         val message_sent: TextView = view.findViewById(R.id.message_sent)
-        var message: Messages? = null
+        var message: Message? = null
 
         init {
             view.setOnClickListener {
-                Toast.makeText(view.context, "teste" , Toast.LENGTH_LONG).show()
+                //Toast.makeText(view.context, "teste" , Toast.LENGTH_LONG).show()
             }
         }
 
     }
 
-    /**
-     * CLASSE ADAPATER RESPONSÁVEL PELOS DADOS E "FORMA" DE APRESENTAÇÃO
-     */
-    class MyAdapter(val list: List<Messages>) : RecyclerView.Adapter<MyViewHolder>() {
+    class MyAdapter(val list: List<Message>) : RecyclerView.Adapter<MyViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.messages, parent, false)
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.messages_group, parent, false)
             return MyViewHolder(view)
         }
 
@@ -98,9 +115,19 @@ class ChatBotActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(viewHolder: MyViewHolder, position: Int) {
             val u = list[position]
-            viewHolder.message_sent.setText(u.message_sent)
-            viewHolder.message_received.setText(u.message_received)
-            viewHolder.message = u
+            lateinit var auth: FirebaseAuth
+            auth = FirebaseAuth.getInstance()
+            val user = auth.currentUser
+            val email = user!!.email
+            if (u.email == email){
+                viewHolder.message_sent.setText(u.mensagem)
+                viewHolder.my_name.setText(u.nome)
+                viewHolder.message = u
+            }else{
+                viewHolder.message_received.setText(u.mensagem)
+                viewHolder.other_name.setText(u.nome)
+                viewHolder.message = u
+            }
         }
 
     }
