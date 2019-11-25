@@ -97,7 +97,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                             response.body()?.forEach {
                                 val ponto = LatLng(it.latitude.toDouble(), it.longitude.toDouble())
                                 mMap.addMarker(MarkerOptions().position(ponto).title(it.nome).snippet(it.descricao))
-                                if (Distance(currentLatLng, ponto) <= 25) {
+                                if (!it.validado && Distance(currentLatLng, ponto) <= 25) {
                                     callAlertValidation(it.nome, Distance(currentLatLng, ponto), it._id)
                                 }
                             }
