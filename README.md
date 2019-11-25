@@ -23,20 +23,21 @@
 
 
 
+**Este é o repositório público do Projeto Dumper. Informações sensíveis como chaves de API para o Firebase, MongoDB Atlas e Dialogflow foram propositalmente ocultadas por razões de segurança.**
 
 
 
+ ***Gilberto Charles, Victor Hugo, Lukas Hipólito***
 
+- **O que é o Dumper?**
+  *O Dumper é um app nativo para android escrito em Kotlin para ajudar as pessoas a descartar corretamente lixo*
 
+- **Qual a stack usada no projeto?**
+  
+  *O Dumper é composto de um app Android e uma api REST NodeJS. A API está hospedada no Heroku e se conecta ao Atlas Storage, onde o banco MongoDB está hospedado. A API também consume a API do DialogFlow onde nosso serviço de ChatBot se encontra. O APP utiliza o Firebase para autenticação.*
 
-
-
-
-
-
-
-
-
-
+- **Por que fizemos o Dumper?**
+  
+  *O Dumper foi um projeto para a disciplina de Projeto Integrador II, do Bacharelado em Ciência da Computação no Instituto de Educação Superior de Brasília - IESB, que está relacionada à cadeira de Desenvolvimento de Aplicativos Móveis*
 
 
