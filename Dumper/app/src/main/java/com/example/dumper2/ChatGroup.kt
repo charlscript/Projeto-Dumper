@@ -2,7 +2,11 @@ package com.example.dumper2
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Insets.add
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.text.format.DateUtils
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_chat_group.*
@@ -20,13 +24,15 @@ import kotlinx.android.synthetic.main.activity_chat_group.et_message
 import kotlinx.android.synthetic.main.activity_chat_group.toolbar
 import kotlinx.android.synthetic.main.messages_group.view.*
 import androidx.core.app.NotificationCompat.getExtras
+import androidx.core.content.ContextCompat.startActivity
+import kotlinx.android.synthetic.main.message_received.view.*
 
-
-
+private const val VIEW_TYPE_MY_MESSAGE = 1
+private const val VIEW_TYPE_OTHER_MESSAGE = 2
 class ChatGroup : AppCompatActivity() {
-
+    private lateinit var adapter: MyAdapter
     private lateinit var auth: FirebaseAuth
-    var messages = mutableListOf<Message>()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         auth = FirebaseAuth.getInstance()
@@ -47,7 +53,39 @@ class ChatGroup : AppCompatActivity() {
         mLinearLayoutManager.isSmoothScrollbarEnabled()
         chatGroup.setLayoutManager(mLinearLayoutManager)
         chatGroup.itemAnimator = DefaultItemAnimator()
-        chatGroup.adapter = MyAdapter(messages)
+        adapter = MyAdapter(this)
+        chatGroup.adapter = adapter
+
+        val mainHandler = Handler(Looper.getMainLooper())
+
+        mainHandler.post(object : Runnable {
+            override fun run() {
+                val retrofitClient = DumperAPI.getRetrofitInstance("https://dumper-app.herokuapp.com")
+                val endpoint = retrofitClient.create(Endpoint::class.java)
+                val callback = endpoint
+                 callback.getGroup(id.toString()).enqueue(object : Callback<GrupoAdminResponse>{
+                    override fun onResponse(call: Call<GrupoAdminResponse>, response: Response<GrupoAdminResponse>) {
+                        adapter.clear()
+                        response.body()?.messages?.forEach{
+                            val respMessage = Message(
+                                it._id,
+                                it.mensagem,
+                                it.nome,
+                                it.email
+                            )
+                            adapter.addMessage(respMessage)
+                        }
+                        adapter.notifyDataSetChanged()
+                    }
+
+                    override fun onFailure(call: Call<GrupoAdminResponse>, t: Throwable) {
+                        Toast.makeText(baseContext, t.message, Toast.LENGTH_SHORT).show()
+                    }
+                })
+
+                mainHandler.postDelayed(this, 3000)
+            }
+        })
 
         val retrofitClient = DumperAPI.getRetrofitInstance("https://dumper-app.herokuapp.com")
         val endpoint = retrofitClient.create(Endpoint::class.java)
@@ -67,7 +105,7 @@ class ChatGroup : AppCompatActivity() {
                     Toast.makeText(baseContext, t.message, Toast.LENGTH_SHORT).show()
                 }
                 override fun onResponse(call: Call<GrupoAdminResponse>, response: Response<GrupoAdminResponse>) {
-                    messages.clear()
+                    adapter.clear()
                     response.body()?.messages?.forEach{
                         val respMessage = Message(
                             it._id,
@@ -75,10 +113,10 @@ class ChatGroup : AppCompatActivity() {
                             it.nome,
                             it.email
                         )
-                        messages.add(respMessage)
+                        adapter.addMessage(respMessage)
                     }
+                    adapter.notifyDataSetChanged()
 
-                    chatGroup.adapter?.notifyDataSetChanged()
                     chatGroup.smoothScrollToPosition(chatGroup.adapter!!.getItemCount())
                     et_message.setText("")
                 }
@@ -88,49 +126,73 @@ class ChatGroup : AppCompatActivity() {
     }
 
 
-    class MyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val message_received: TextView = view.findViewById(R.id.message_received)
-        val my_name: TextView = view.findViewById(R.id.my_name)
-        val other_name: TextView = view.findViewById(R.id.other_name)
-        val message_sent: TextView = view.findViewById(R.id.message_sent)
-        var message: Message? = null
-
-        init {
-            view.setOnClickListener {
-                //Toast.makeText(view.context, "teste" , Toast.LENGTH_LONG).show()
-            }
+    class MyAdapter (val context: Context) : RecyclerView.Adapter<MessageViewHolder>() {
+        var messages = mutableListOf<Message>()
+        fun clear(){
+            messages.clear()
         }
-
-    }
-
-    class MyAdapter(val list: List<Message>) : RecyclerView.Adapter<MyViewHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.messages_group, parent, false)
-            return MyViewHolder(view)
+        fun addMessage(message: Message){
+            messages.add(message)
         }
 
         override fun getItemCount(): Int {
-            return list.size
+            return messages.size
         }
 
-        override fun onBindViewHolder(viewHolder: MyViewHolder, position: Int) {
-            val u = list[position]
+        override fun getItemViewType(position: Int): Int {
+            val message = messages.get(position)
             lateinit var auth: FirebaseAuth
             auth = FirebaseAuth.getInstance()
             val user = auth.currentUser
             val email = user!!.email
-            if (u.email == email){
-                viewHolder.message_sent.setText(u.mensagem)
-                viewHolder.my_name.setText(u.nome)
-                viewHolder.message = u
-            }else{
-                viewHolder.message_received.setText(u.mensagem)
-                viewHolder.other_name.setText(u.nome)
-                viewHolder.message = u
+            return if(email == message.email) {
+                VIEW_TYPE_MY_MESSAGE
+            }
+            else {
+                VIEW_TYPE_OTHER_MESSAGE
             }
         }
 
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
+            return if(viewType == VIEW_TYPE_MY_MESSAGE) {
+                MyMessageViewHolder(LayoutInflater.from(context).inflate(R.layout.messages_group, parent, false))
+            } else {
+                OtherMessageViewHolder(LayoutInflater.from(context).inflate(R.layout.message_received, parent, false))
+            }
+        }
+
+        override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
+            val message = messages.get(position)
+
+            holder?.bind(message)
+        }
+
+        inner class MyMessageViewHolder (view: View) : MessageViewHolder(view) {
+            private var messageText: TextView = view.message_sent
+            private var my_name: TextView = view.my_name
+
+            override fun bind(message: Message) {
+                messageText.text = message.mensagem
+                my_name.text = message.nome
+            }
+        }
+
+        inner class OtherMessageViewHolder (view: View) : MessageViewHolder(view) {
+            private var messageText: TextView = view.message_received
+            private var other_name: TextView = view.other_name
+
+            override fun bind(message: Message) {
+                messageText.text = message.mensagem
+                other_name.text = message.nome
+
+            }
+        }
     }
+
+    open class MessageViewHolder (view: View) : RecyclerView.ViewHolder(view) {
+        open fun bind(message:Message) {}
+    }
+
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true

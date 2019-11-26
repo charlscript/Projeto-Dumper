@@ -13,16 +13,13 @@ interface Endpoint {
     @GET("validatePoint/{id}")
     fun validatePoint(@Path("id") pointId: String): Call<RegisterPointResponse>
 
-
-    @POST("login")
-    fun login(@Body auth: Auth): Call<Login>
+    @GET("getGroup/{id}")
+    fun getGroup(@Path("id") groupId: String): Call<GrupoAdminResponse>
 
 
     @POST ("savePoint")
     fun savePoint(@Body registerPoint: RegisterPoint) : Call <RegisterPointResponse>
 
-    @POST("saveUser")
-    fun saveUser(@Body registerUser: RegisterUser) : Call<RegisterUserResponse>
 
     @POST("dialog")
     fun dialog(@Body dialogFlowPost: DialogFlowPost) : Call<DialogFlowResponse>

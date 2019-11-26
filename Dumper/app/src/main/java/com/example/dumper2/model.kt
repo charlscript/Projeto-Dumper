@@ -152,7 +152,6 @@ data class GrupoAdminResponse(
     var createdAt: String,
     var updatedAt: String,
     var __v: Int
-
 )
 
 data class Membro(

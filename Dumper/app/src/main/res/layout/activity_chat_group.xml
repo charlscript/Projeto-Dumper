@@ -40,8 +40,7 @@
             app:layout_constraintBottom_toTopOf="@+id/et_message"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/guideline"
-            tools:listitem="@layout/messages_group" />
+            app:layout_constraintTop_toTopOf="@+id/guideline" />
 
         <EditText
             android:id="@+id/et_message"
